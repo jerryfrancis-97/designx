@@ -25,6 +25,24 @@
         <mxCell id="2MTKN3Edo7IDJA0WnXg--5" value="Backend" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
           <mxGeometry x="630" y="90" width="60" height="30" as="geometry" />
         </mxCell>
+        <mxCell id="2MTKN3Edo7IDJA0WnXg--6" value="IMAGE viewer" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="850" y="275" width="110" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="2MTKN3Edo7IDJA0WnXg--10" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="2MTKN3Edo7IDJA0WnXg--7" target="2MTKN3Edo7IDJA0WnXg--6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="2MTKN3Edo7IDJA0WnXg--7" value="Image show button" style="triangle;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="720" y="285" width="56" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="2MTKN3Edo7IDJA0WnXg--9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="2MTKN3Edo7IDJA0WnXg--8" target="2MTKN3Edo7IDJA0WnXg--7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="2MTKN3Edo7IDJA0WnXg--8" value="Image upload button" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="540" y="295" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="2MTKN3Edo7IDJA0WnXg--11" value="&lt;h1 style=&quot;margin-top: 0px;&quot;&gt;Code parts for above&lt;/h1&gt;&lt;div&gt;code snippets for above&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=hidden;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="647" y="395" width="223" height="105" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
