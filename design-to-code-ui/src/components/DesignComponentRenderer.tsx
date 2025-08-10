@@ -46,13 +46,14 @@ export function DesignComponentRenderer({
     case 'shape':
       return (
         <div
-          className={`${baseClasses} ${component.color}`}
+          className={baseClasses}
           style={{
             left: component.x,
             top: component.y,
             width: component.width,
             height: component.height,
             zIndex: component.zIndex,
+            backgroundColor: component.color,
           }}
           onMouseDown={onMouseDown}
           onClick={onClick}
@@ -85,6 +86,7 @@ export function DesignComponentRenderer({
             width: component.width,
             height: component.height,
             zIndex: component.zIndex,
+            backgroundColor: component.color,
           }}
           onMouseDown={onMouseDown}
           onClick={onClick}
@@ -94,11 +96,12 @@ export function DesignComponentRenderer({
             type="text"
             value={component.content || ''}
             onChange={handleTextChange}
-            className="w-full h-full px-2 py-1 border border-gray-300 rounded bg-white text-black"
+            className="w-full h-full px-2 py-1 border border-gray-300 rounded text-black"
             style={{
               fontSize: component.fontSize,
               fontWeight: component.fontWeight,
               textAlign: component.textAlign,
+              backgroundColor: 'transparent',
             }}
             placeholder="Enter text..."
           />
@@ -115,6 +118,7 @@ export function DesignComponentRenderer({
             width: component.width,
             height: component.height,
             zIndex: component.zIndex,
+            backgroundColor: component.color,
           }}
           onMouseDown={onMouseDown}
           onClick={onClick}
@@ -146,6 +150,7 @@ export function DesignComponentRenderer({
             width: component.width,
             height: component.height,
             zIndex: component.zIndex,
+            backgroundColor: component.color,
           }}
           onMouseDown={onMouseDown}
           onClick={onClick}
@@ -155,7 +160,11 @@ export function DesignComponentRenderer({
             type="text"
             value={component.buttonText}
             onChange={handleButtonTextChange}
-            className="w-full h-full px-3 py-2 border border-gray-300 rounded bg-blue-500 text-white text-center font-medium"
+            className="w-full h-full px-3 py-2 border border-gray-300 rounded text-center font-medium"
+            style={{
+              backgroundColor: 'transparent',
+              color: component.color === '#F8F9FA' || component.color === '#E9ECEF' || component.color === '#DEE2E6' || component.color === '#F1F3F4' ? '#000000' : '#FFFFFF',
+            }}
             placeholder="Button text..."
           />
         </div>

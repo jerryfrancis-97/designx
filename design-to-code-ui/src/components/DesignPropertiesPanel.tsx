@@ -6,9 +6,11 @@ import { AnyComponent, ShapeComponent, TextComponent, SliderComponent, ButtonCom
 interface DesignPropertiesPanelProps {
   selectedComponent: AnyComponent | null;
   onUpdateComponent: (id: string, updates: Partial<AnyComponent>) => void;
+  onBringToFront: (id: string) => void;
+  onSendToBack: (id: string) => void;
 }
 
-export function DesignPropertiesPanel({ selectedComponent, onUpdateComponent }: DesignPropertiesPanelProps) {
+export function DesignPropertiesPanel({ selectedComponent, onUpdateComponent, onBringToFront, onSendToBack }: DesignPropertiesPanelProps) {
   if (!selectedComponent) {
     return (
       <div className="w-80 bg-white border-l border-gray-200 p-4">
@@ -79,6 +81,32 @@ export function DesignPropertiesPanel({ selectedComponent, onUpdateComponent }: 
           onChange={(e) => handleInputChange('color', e.target.value)}
           className="w-full h-10 border border-gray-300 rounded"
         />
+      </div>
+
+      <div>
+        <label className="block text-xs text-gray-600 mb-1">Z-Index</label>
+        <div className="flex items-center gap-2">
+          <input
+            type="number"
+            value={selectedComponent.zIndex}
+            onChange={(e) => handleInputChange('zIndex', parseInt(e.target.value) || 0)}
+            className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded"
+          />
+          <button
+            onClick={() => onBringToFront(selectedComponent.id)}
+            className="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+            title="Bring to Front"
+          >
+            ↑
+          </button>
+          <button
+            onClick={() => onSendToBack(selectedComponent.id)}
+            className="px-2 py-1 text-xs bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
+            title="Send to Back"
+          >
+            ↓
+          </button>
+        </div>
       </div>
     </div>
   );

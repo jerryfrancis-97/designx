@@ -73,8 +73,34 @@
 
 /* Grid pattern for design canvas */
 .bg-grid-pattern {
-  background-image: 
+  background-image:
     linear-gradient(rgba(0,0,0,0.1) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0,0,0,0.1) 1px, transparent 1px);
   background-size: 20px 20px;
 }
+
+/* Resize handle styles */
+.resize-handle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background-color: #3b82f6;
+  border: 1px solid white;
+  border-radius: 1px;
+  z-index: 1000;
+}
+
+.resize-handle:hover {
+  background-color: #2563eb;
+  transform: scale(1.2);
+}
+
+/* Cursor styles for resize handles */
+.cursor-nw-resize { cursor: nw-resize; }
+.cursor-ne-resize { cursor: ne-resize; }
+.cursor-sw-resize { cursor: sw-resize; }
+.cursor-se-resize { cursor: se-resize; }
+.cursor-n-resize { cursor: n-resize; }
+.cursor-s-resize { cursor: s-resize; }
+.cursor-w-resize { cursor: w-resize; }
+.cursor-e-resize { cursor: e-resize; }

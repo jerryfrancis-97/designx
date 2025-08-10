@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { DesignSidebar } from './DesignSidebar';
 import { DesignCanvas } from './DesignCanvas';
 import { DesignPropertiesPanel } from './DesignPropertiesPanel';
@@ -10,6 +10,82 @@ export function DesignWorkspace() {
   const [components, setComponents] = useState<AnyComponent[]>([]);
   const [selectedComponent, setSelectedComponent] = useState<AnyComponent | null>(null);
   const [nextZIndex, setNextZIndex] = useState(1);
+  const [history, setHistory] = useState<AnyComponent[][]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+
+  const saveToHistory = useCallback((newComponents: AnyComponent[]) => {
+    setHistory(prev => {
+      const newHistory = prev.slice(0, historyIndex + 1);
+      newHistory.push([...newComponents]);
+      return newHistory;
+    });
+    setHistoryIndex(prev => prev + 1);
+  }, [historyIndex]);
+
+  const undo = useCallback(() => {
+    if (historyIndex > 0) {
+      const newIndex = historyIndex - 1;
+      setHistoryIndex(newIndex);
+      setComponents([...history[newIndex]]);
+      setSelectedComponent(null);
+    }
+  }, [historyIndex, history]);
+
+  const redo = useCallback(() => {
+    if (historyIndex < history.length - 1) {
+      const newIndex = historyIndex + 1;
+      setHistoryIndex(newIndex);
+      setComponents([...history[newIndex]]);
+      setSelectedComponent(null);
+    }
+  }, [historyIndex, history]);
+
+  const resetWorkspace = useCallback(() => {
+    setComponents([]);
+    setSelectedComponent(null);
+    setNextZIndex(1);
+    setHistory([]);
+    setHistoryIndex(-1);
+  }, []);
+
+  const saveComponents = useCallback(() => {
+    const dataStr = JSON.stringify(components, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'design-components.json';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }, [components]);
+
+  const loadComponents = useCallback((file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const loadedComponents = JSON.parse(e.target?.result as string);
+        setComponents(loadedComponents);
+        setSelectedComponent(null);
+        const maxZIndex = Math.max(...loadedComponents.map((comp: AnyComponent) => comp.zIndex));
+        setNextZIndex(maxZIndex + 1);
+        saveToHistory(loadedComponents);
+      } catch (error) {
+        console.error('Error loading components:', error);
+        alert('Error loading components. Please check the file format.');
+      }
+    };
+    reader.readAsText(file);
+  }, [saveToHistory]);
+
+  // Initialize history with empty state
+  useEffect(() => {
+    if (history.length === 0) {
+      setHistory([[]]);
+      setHistoryIndex(0);
+    }
+  }, [history.length]);
 
   const addComponent = useCallback((type: string, x: number, y: number, options?: any) => {
     const baseComponent = {
@@ -84,27 +160,33 @@ export function DesignWorkspace() {
         } as ShapeComponent;
     }
 
-    setComponents(prev => [...prev, newComponent]);
+    const newComponents = [...components, newComponent];
+    setComponents(newComponents);
     setNextZIndex(prev => prev + 1);
     setSelectedComponent(newComponent);
-  }, [nextZIndex]);
+    saveToHistory(newComponents);
+  }, [nextZIndex, components, saveToHistory]);
 
   const updateComponent = useCallback((id: string, updates: Partial<AnyComponent>) => {
-    setComponents(prev => prev.map(comp => 
+    const newComponents = components.map(comp => 
       comp.id === id ? { ...comp, ...updates } as AnyComponent : comp
-    ));
+    );
+    setComponents(newComponents);
     
     if (selectedComponent?.id === id) {
       setSelectedComponent(prev => prev ? { ...prev, ...updates } as AnyComponent : null);
     }
-  }, [selectedComponent]);
+    saveToHistory(newComponents);
+  }, [selectedComponent, components, saveToHistory]);
 
   const deleteComponent = useCallback((id: string) => {
-    setComponents(prev => prev.filter(comp => comp.id !== id));
+    const newComponents = components.filter(comp => comp.id !== id);
+    setComponents(newComponents);
     if (selectedComponent?.id === id) {
       setSelectedComponent(null);
     }
-  }, [selectedComponent]);
+    saveToHistory(newComponents);
+  }, [selectedComponent, components, saveToHistory]);
 
   const selectComponent = useCallback((component: AnyComponent | null) => {
     setSelectedComponent(component);
@@ -118,6 +200,36 @@ export function DesignWorkspace() {
     setSelectedComponent(null);
     setComponents(prev => prev.map(comp => ({ ...comp, isSelected: false })));
   }, []);
+
+  const bringToFront = useCallback((id: string) => {
+    const newComponents = components.map(comp => 
+      comp.id === id 
+        ? { ...comp, zIndex: Math.max(...components.map(comp => comp.zIndex)) + 1 }
+        : comp
+    );
+    setComponents(newComponents);
+    
+    if (selectedComponent?.id === id) {
+      setSelectedComponent(prev => prev ? { ...prev, zIndex: Math.max(...components.map(comp => comp.zIndex)) + 1 } : null);
+    }
+    
+    setNextZIndex(prev => prev + 1);
+    saveToHistory(newComponents);
+  }, [selectedComponent, components, saveToHistory]);
+
+  const sendToBack = useCallback((id: string) => {
+    const newComponents = components.map(comp => 
+      comp.id === id 
+        ? { ...comp, zIndex: Math.min(...components.map(comp => comp.zIndex)) - 1 }
+        : comp
+    );
+    setComponents(newComponents);
+    
+    if (selectedComponent?.id === id) {
+      setSelectedComponent(prev => prev ? { ...prev, zIndex: Math.min(...components.map(comp => comp.zIndex)) - 1 } : null);
+    }
+    saveToHistory(newComponents);
+  }, [selectedComponent, components, saveToHistory]);
 
   const handleCanvasClick = useCallback((e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
@@ -140,6 +252,15 @@ export function DesignWorkspace() {
           onSelectComponent={selectComponent}
           onCanvasClick={handleCanvasClick}
           onAddComponent={addComponent}
+          onBringToFront={bringToFront}
+          onSendToBack={sendToBack}
+          onUndo={undo}
+          onRedo={redo}
+          onReset={resetWorkspace}
+          onSave={saveComponents}
+          onLoad={loadComponents}
+          canUndo={historyIndex > 0}
+          canRedo={historyIndex < history.length - 1}
         />
       </div>
       
@@ -147,6 +268,8 @@ export function DesignWorkspace() {
       <DesignPropertiesPanel
         selectedComponent={selectedComponent}
         onUpdateComponent={updateComponent}
+        onBringToFront={bringToFront}
+        onSendToBack={sendToBack}
       />
     </div>
   );
