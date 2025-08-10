@@ -16,17 +16,19 @@
 
 import { useState } from 'react';
 import { Sparkles, Save, Play } from 'lucide-react';
-import { generateAppWithLovable } from '@/lib/lovable-api';
+import { AppGenerationRequest, GeneratedApp } from '@/types/app';
+import { generateAppWithBackend } from '@/lib/backend-api';
 
 interface AppGeneratorProps {
-  onAppGenerated: (code: string, appName: string) => void;
+  onAppGenerated: (app: GeneratedApp) => void;
+  isGenerating?: boolean;
+  setIsGenerating?: (generating: boolean) => void;
 }
 
-export function AppGenerator({ onAppGenerated }: AppGeneratorProps) {
+export function AppGenerator({ onAppGenerated, isGenerating, setIsGenerating }: AppGeneratorProps) {
   // State for form inputs and UI states
   const [appDescription, setAppDescription] = useState('');
   const [appName, setAppName] = useState('');
-  const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   /**
@@ -38,8 +40,15 @@ export function AppGenerator({ onAppGenerated }: AppGeneratorProps) {
     
     setIsGenerating(true);
     try {
-      const generatedCode = await generateAppWithLovable(appDescription);
-      onAppGenerated(generatedCode, appName || 'Generated App');
+      const request: AppGenerationRequest = {
+        description: appDescription,
+        features: [],
+        technology: 'auto',
+        complexity: 'medium'
+      };
+      
+      const generatedApp = await generateAppWithBackend(request);
+      onAppGenerated(generatedApp);
     } catch (error) {
       console.error('Error generating app:', error);
     } finally {

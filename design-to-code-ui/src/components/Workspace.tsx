@@ -5,21 +5,22 @@
  * Features a tabbed interface for code viewing and preview functionality.
  * 
  * Features:
- * - Code display with syntax highlighting
+ * - Multi-file code display with file tree navigation
  * - Tab navigation (Code/Preview)
  * - Copy to clipboard functionality
  * - File download capability
  * - Workspace integration options
  * - Code execution simulation
+ * - Support for both single files and multi-file projects
  */
 
 'use client';
 
 import { useState } from 'react';
-import { Copy, Download, FolderOpen, Play, Code, Eye } from 'lucide-react';
+import { Copy, Download, FolderOpen, Play, Code, Eye, Folder } from 'lucide-react';
 
 interface WorkspaceProps {
-  generatedCode: string;
+  generatedCode: string | Record<string, string>;
   appName: string;
 }
 
@@ -27,6 +28,28 @@ export function Workspace({ generatedCode, appName }: WorkspaceProps) {
   // State for tab management and UI feedback
   const [activeTab, setActiveTab] = useState<'code' | 'preview'>('code');
   const [copied, setCopied] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<string | null>(null);
+
+  // Helper function to check if generatedCode is a file object
+  const isFileObject = (code: string | Record<string, string>): code is Record<string, string> => {
+    return typeof code === 'object' && code !== null;
+  };
+
+  // Get the current code to display
+  const getCurrentCode = (): string => {
+    if (isFileObject(generatedCode)) {
+      return selectedFile && generatedCode[selectedFile] ? generatedCode[selectedFile] : '';
+    }
+    return generatedCode;
+  };
+
+  // Get file list if it's a file object
+  const getFileList = (): string[] => {
+    if (isFileObject(generatedCode)) {
+      return Object.keys(generatedCode);
+    }
+    return [];
+  };
 
   /**
    * Copies the generated code to the user's clipboard
@@ -34,7 +57,8 @@ export function Workspace({ generatedCode, appName }: WorkspaceProps) {
    */
   const handleCopyCode = async () => {
     try {
-      await navigator.clipboard.writeText(generatedCode);
+      const codeToCopy = getCurrentCode();
+      await navigator.clipboard.writeText(codeToCopy);
       setCopied(true);
       // Reset copied state after 2 seconds
       setTimeout(() => setCopied(false), 2000);
@@ -48,7 +72,8 @@ export function Workspace({ generatedCode, appName }: WorkspaceProps) {
    * Creates a blob and triggers download with appropriate filename
    */
   const handleSaveToFile = () => {
-    const blob = new Blob([generatedCode], { type: 'text/plain' });
+    const codeToSave = getCurrentCode();
+    const blob = new Blob([codeToSave], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -87,6 +112,11 @@ export function Workspace({ generatedCode, appName }: WorkspaceProps) {
         </h2>
         <p className="text-gray-600 mt-1">
           {appName ? `Generated code for: ${appName}` : 'No app generated yet'}
+          {isFileObject(generatedCode) && getFileList().length > 1 && (
+            <span className="ml-2 text-blue-600">
+              ({getFileList().length} files)
+            </span>
+          )}
         </p>
       </div>
       
@@ -125,6 +155,31 @@ export function Workspace({ generatedCode, appName }: WorkspaceProps) {
           <div className="space-y-4">
             {generatedCode ? (
               <>
+                {/* File Tree Navigation (if multiple files) */}
+                {isFileObject(generatedCode) && getFileList().length > 1 && (
+                  <div className="mb-4 p-3 bg-gray-50 rounded-lg border">
+                    <h4 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
+                      <Folder className="h-4 w-4 text-blue-500" />
+                      Project Files ({getFileList().length})
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {getFileList().map((filename) => (
+                        <button
+                          key={filename}
+                          onClick={() => setSelectedFile(filename)}
+                          className={`px-3 py-1 text-sm rounded-md border ${
+                            selectedFile === filename
+                              ? 'bg-blue-100 border-blue-300 text-blue-700'
+                              : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                          }`}
+                        >
+                          {filename}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Action Buttons */}
                 <div className="flex gap-2 mb-4">
                   {/* Copy Code Button */}
@@ -163,11 +218,20 @@ export function Workspace({ generatedCode, appName }: WorkspaceProps) {
                     Run Code
                   </button>
                 </div>
+
+                {/* File Info (if multiple files) */}
+                {isFileObject(generatedCode) && selectedFile && (
+                  <div className="mb-3 p-2 bg-blue-50 border border-blue-200 rounded-md">
+                    <p className="text-sm text-blue-800">
+                      <strong>Current file:</strong> {selectedFile}
+                    </p>
+                  </div>
+                )}
                 
                 {/* Code Display */}
                 <div className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-auto max-h-96">
                   <pre className="text-sm">
-                    <code>{generatedCode}</code>
+                    <code>{getCurrentCode()}</code>
                   </pre>
                 </div>
               </>

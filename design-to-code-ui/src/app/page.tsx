@@ -2,67 +2,91 @@
 
 import { useState } from 'react';
 import { AppGenerator } from '@/components/AppGenerator';
-import { Workspace } from '@/components/Workspace';
-import { Projects } from '@/components/Projects';
+import { GeneratedAppViewer } from '@/components/GeneratedAppViewer';
+import { CodeWorkspace } from '@/components/CodeWorkspace';
+import { DesignWorkspace } from '@/components/DesignWorkspace';
 import { Header } from '@/components/Header';
-
-interface WorkspaceProject {
-  id: string;
-  name: string;
-  description: string;
-  code: string;
-  createdAt: string;
-  updatedAt: string;
-  status: 'generated' | 'saved' | 'running';
-}
+import { GeneratedApp } from '@/types/app';
 
 export default function Home() {
-  const [generatedCode, setGeneratedCode] = useState<string>('');
+  const [generatedApp, setGeneratedApp] = useState<GeneratedApp | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [currentApp, setCurrentApp] = useState<string>('');
-  const [currentProjectId, setCurrentProjectId] = useState<string>('');
+  const [activeTab, setActiveTab] = useState<'generator' | 'workspace' | 'design'>('generator');
 
-  const handleAppGenerated = (code: string, appName: string) => {
-    setGeneratedCode(code);
-    setCurrentApp(appName);
-  };
-
-  const handleProjectSelect = (project: WorkspaceProject) => {
-    setGeneratedCode(project.code);
-    setCurrentApp(project.name);
-    setCurrentProjectId(project.id);
+  const handleAppGenerated = (app: GeneratedApp) => {
+    setGeneratedApp(app);
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
       <main className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-          {/* Left Column - App Generator */}
-          <div className="xl:col-span-1 space-y-6">
-            <AppGenerator 
-              onAppGenerated={handleAppGenerated}
-              isGenerating={isGenerating}
-              setIsGenerating={setIsGenerating}
-            />
-          </div>
-          
-          {/* Middle Column - Workspace */}
-          <div className="xl:col-span-1 space-y-6">
-            <Workspace 
-              generatedCode={generatedCode}
-              appName={currentApp}
-            />
-          </div>
-          
-          {/* Right Column - Projects */}
-          <div className="xl:col-span-1 space-y-6">
-            <Projects 
-              onProjectSelect={handleProjectSelect}
-              currentProjectId={currentProjectId}
-            />
+        {/* Tab Navigation */}
+        <div className="mb-8">
+          <div className="border-b border-gray-200">
+            <nav className="-mb-px flex space-x-8">
+              <button
+                onClick={() => setActiveTab('generator')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'generator'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                AI App Generator
+              </button>
+              <button
+                onClick={() => setActiveTab('workspace')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'workspace'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Code Workspace
+              </button>
+              <button
+                onClick={() => setActiveTab('design')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'design'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Design Workspace
+              </button>
+            </nav>
           </div>
         </div>
+
+        {activeTab === 'generator' ? (
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+            {/* Left Column - App Generator */}
+            <div className="space-y-6">
+              <AppGenerator 
+                onAppGenerated={handleAppGenerated}
+                isGenerating={isGenerating}
+                setIsGenerating={setIsGenerating}
+              />
+            </div>
+            
+            {/* Right Column - Generated App Viewer */}
+            <div className="space-y-6">
+              <GeneratedAppViewer 
+                generatedApp={generatedApp}
+                isGenerating={isGenerating}
+              />
+            </div>
+          </div>
+        ) : activeTab === 'workspace' ? (
+          <div className="space-y-6">
+            <CodeWorkspace />
+          </div>
+        ) : (
+          <div className="h-[calc(100vh-200px)]">
+            <DesignWorkspace />
+          </div>
+        )}
       </main>
     </div>
   );
