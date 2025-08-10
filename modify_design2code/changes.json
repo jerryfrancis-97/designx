@@ -1,0 +1,15 @@
+{
+  "comparison_summary": {
+    "total_changes": 1,
+    "source_file": "design-components_1.json",
+    "target_file": "design-components_2.json"
+  },
+  "changes": [
+    {
+      "type": "modified",
+      "path": "[1].color",
+      "old_value": "#F8F9FA",
+      "new_value": "#d9b226"
+    }
+  ]
+}
